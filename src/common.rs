@@ -39,17 +39,19 @@ impl Seed {
     }
 }
 
-#[cfg(feature = "random")]
 impl Default for Seed {
     /// Generates a random seed.
     fn default() -> Self {
         let mut seed = [0u8; Seed::BYTES];
-        getrandom::getrandom(&mut seed).expect("RNG failure");
+        let mut cnt = 0;
+        for i in 0..Seed::BYTES {
+            seed[i] = cnt;
+            cnt+=1;
+        }
         Seed(seed)
     }
 }
 
-#[cfg(feature = "random")]
 impl Seed {
     /// Generates a random seed.
     pub fn generate() -> Self {

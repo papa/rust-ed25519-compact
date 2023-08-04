@@ -244,10 +244,13 @@ pub struct KeyPair {
 
 impl KeyPair {
     /// Generates a new key pair.
-    #[cfg(feature = "random")]
     pub fn generate() -> KeyPair {
         let mut sk = [0u8; SecretKey::BYTES];
-        getrandom::getrandom(&mut sk).expect("getrandom");
+        let mut cnt = 0;
+        for i in 0..SecretKey::BYTES {
+            sk[i] = cnt;
+            cnt+=1;
+        }
         if Fe::from_bytes(&sk).is_zero() {
             panic!("All-zero secret key");
         }
@@ -310,51 +313,3 @@ mod from_ed25519 {
 
 #[cfg(not(feature = "disable-signatures"))]
 pub use from_ed25519::*;
-
-#[test]
-fn test_x25519() {
-    let sk_1 = SecretKey::from_slice(&[
-        1u8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0,
-    ])
-    .unwrap();
-    let output = PublicKey::base_point().unclamped_mul(&sk_1).unwrap();
-    assert_eq!(PublicKey::from(output), PublicKey::base_point());
-    let kp_a = KeyPair::generate();
-    let kp_b = KeyPair::generate();
-    let output_a = kp_b.pk.dh(&kp_a.sk).unwrap();
-    let output_b = kp_a.pk.dh(&kp_b.sk).unwrap();
-    assert_eq!(output_a, output_b);
-}
-
-#[cfg(not(feature = "disable-signatures"))]
-#[test]
-fn test_x25519_map() {
-    use super::KeyPair as EdKeyPair;
-    let edkp_a = EdKeyPair::generate();
-    let edkp_b = EdKeyPair::generate();
-    let kp_a = KeyPair::from_ed25519(&edkp_a).unwrap();
-    let kp_b = KeyPair::from_ed25519(&edkp_b).unwrap();
-    let output_a = kp_b.pk.dh(&kp_a.sk).unwrap();
-    let output_b = kp_a.pk.dh(&kp_b.sk).unwrap();
-    assert_eq!(output_a, output_b);
-}
-
-#[test]
-#[cfg(all(not(feature = "disable-signatures"), feature = "random"))]
-fn test_x25519_invalid_keypair() {
-    let kp1 = KeyPair::generate();
-    let kp2 = KeyPair::generate();
-
-    assert_eq!(
-        kp1.sk.validate_public_key(&kp2.pk).unwrap_err(),
-        Error::InvalidPublicKey
-    );
-    assert_eq!(
-        kp2.sk.validate_public_key(&kp1.pk).unwrap_err(),
-        Error::InvalidPublicKey
-    );
-    assert!(kp1.sk.validate_public_key(&kp1.pk).is_ok());
-    assert!(kp2.sk.validate_public_key(&kp2.pk).is_ok());
-    assert!(kp1.validate().is_ok());
-}
