@@ -508,7 +508,7 @@ impl Default for Noise {
         let mut cnt = 0;
         for i in 0..Noise::BYTES {
             noise[i] = cnt;
-            cnt+=1;
+            cnt += 1;
         }
         Noise(noise)
     }
@@ -626,7 +626,7 @@ mod blind_keys {
             let mut cnt = 0;
             for i in 0..Blind::BYTES {
                 blind[i] = cnt;
-                cnt+=1;
+                cnt += 1;
             }
             Blind(blind)
         }

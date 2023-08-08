@@ -46,7 +46,7 @@ impl Default for Seed {
         let mut cnt = 0;
         for i in 0..Seed::BYTES {
             seed[i] = cnt;
-            cnt+=1;
+            cnt += 1;
         }
         Seed(seed)
     }

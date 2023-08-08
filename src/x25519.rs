@@ -249,7 +249,7 @@ impl KeyPair {
         let mut cnt = 0;
         for i in 0..SecretKey::BYTES {
             sk[i] = cnt;
-            cnt+=1;
+            cnt += 1;
         }
         if Fe::from_bytes(&sk).is_zero() {
             panic!("All-zero secret key");
